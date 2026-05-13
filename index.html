@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizza Palabra — Calculadora de Masas</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e85d20">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pizza Palabra">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0c0a;
+  --surface: #171410;
+  --surface2: #201d18;
+  --surface3: #2a2620;
+  --border: rgba(255,235,180,0.07);
+  --border2: rgba(255,235,180,0.14);
+  --text: #f5eedf;
+  --text2: #a89880;
+  --text3: #5c5040;
+  --fire: #e85d20;
+  --fire2: #ff8c42;
+  --fire-bg: rgba(232,93,32,0.1);
+  --fire-border: rgba(232,93,32,0.25);
+  --gold: #c8992a;
+  --gold-bg: rgba(200,153,42,0.1);
+  --gold-border: rgba(200,153,42,0.2);
+  --green: #5aaa72;
+  --green-bg: rgba(90,170,114,0.1);
+  --green-border: rgba(90,170,114,0.2);
+  --blue: #5b8ef6;
+  --blue-bg: rgba(91,142,246,0.1);
+  --blue-border: rgba(91,142,246,0.2);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+/* ─── HEADER ─── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  background: var(--fire-bg);
+  border: 1px solid var(--fire-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.brand-name em { color: var(--fire); font-style: italic; }
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 300;
+}
+
+/* ─── MAIN ─── */
+main {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* ─── HOME / MASA GRID ─── */
+.home-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text2);
+  margin-bottom: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.masa-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.masa-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.masa-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--fire-bg);
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+
+.masa-card:active::before { opacity: 1; }
+
+.masa-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+
+.masa-emoji {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.masa-nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.masa-desc {
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.masa-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.badge-tuya {
+  background: var(--fire-bg);
+  color: var(--fire2);
+  border: 1px solid var(--fire-border);
+}
+
+.badge-std {
+  background: var(--gold-bg);
+  color: var(--gold);
+  border: 1px solid var(--gold-border);
+}
+
+/* ─── CALCULATOR VIEW ─── */
+.calc-view { display: none; }
+.calc-view.active { display: block; }
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  margin-bottom: 1.25rem;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s;
+}
+
+.back-btn:hover { border-color: var(--border2); }
+
+.calc-header {
+  margin-bottom: 1.25rem;
+}
+
+.calc-emoji { font-size: 36px; margin-bottom: 6px; display: block; }
+
+.calc-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.calc-title em { color: var(--fire); font-style: italic; }
+
+.calc-subtitle {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 300;
+}
+
+/* ─── QUANTITY INPUT ─── */
+.qty-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1rem;
+  margin-bottom: 10px;
+}
+
+.qty-label {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+
+.num-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.num-btn {
+  width: 46px; height: 46px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s, background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Outfit', sans-serif;
+}
+
+.num-btn:active { transform: scale(0.88); background: var(--surface3); }
+
+.num-input {
+  flex: 1;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  min-width: 0;
+  -moz-appearance: textfield;
+  font-family: 'Outfit', sans-serif;
+}
+
+.num-input::-webkit-inner-spin-button,
+.num-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.unit-tag {
+  font-size: 11px;
+  color: var(--text3);
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+/* ─── NOTES ─── */
+.nota-card {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: 10px;
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.nota-card strong { font-weight: 600; }
+
+/* ─── DIVIDER ─── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.25rem 0;
+}
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+
+/* ─── INGREDIENTS GRID ─── */
+.ing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ing-card {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  border: 1px solid var(--border);
+}
+
+.ing-label {
+  font-size: 10px;
+  color: var(--text3);
+  margin-bottom: 5px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.ing-val {
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.ing-val small {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--text2);
+}
+
+.ing-val.highlight { color: var(--fire2); }
+
+/* ─── WATER CARD / SUMMARY ─── */
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 300;
+}
+
+.pill {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.pill-blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.pill-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.pill-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.pill-fire { background: var(--fire-bg); color: var(--fire2); border: 1px solid var(--fire-border); }
+
+.info-val {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.info-val.green { color: var(--green); }
+
+/* ─── REPOSO ─── */
+.reposo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 10px;
+}
+
+.reposo-steps {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.reposo-step {
+  flex: 1;
+  min-width: 60px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.reposo-num {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fire2);
+  line-height: 1;
+}
+
+.reposo-unit {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 3px;
+  font-weight: 300;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 2rem 1rem 0;
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 300;
+}
+
+footer em {
+  color: var(--fire);
+  font-style: italic;
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+}
+
+@media (max-width: 380px) {
+  .masa-grid { grid-template-columns: 1fr 1fr; }
+  .ing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍕</div>
+  <div>
+    <div class="brand-name">Pizza <em>Palabra</em></div>
+    <div class="brand-sub">Calculadora de masas</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <div id="home">
+    <p class="home-title">¿Qué masa necesitas hoy?</p>
+    <div class="masa-grid" id="masa-grid"></div>
+  </div>
+
+  <!-- CALC -->
+  <div class="calc-view" id="calc-view">
+    <button class="back-btn" onclick="goHome()">← Volver</button>
+    <div class="calc-header">
+      <span class="calc-emoji" id="c-emoji"></span>
+      <div class="calc-title" id="c-title"></div>
+      <div class="calc-subtitle" id="c-subtitle"></div>
+    </div>
+
+    <div class="qty-card">
+      <div class="qty-label" id="c-qty-label">Cantidad</div>
+      <div class="num-row">
+        <button class="num-btn" onclick="step(-1)">−</button>
+        <input class="num-input" type="number" id="c-qty" value="1" min="1" oninput="calcular()">
+        <button class="num-btn" onclick="step(1)">+</button>
+      </div>
+      <div class="unit-tag" id="c-unit-tag"></div>
+    </div>
+
+    <div class="nota-card" id="c-nota" style="display:none"></div>
+
+    <div class="divider"></div>
+    <div class="section-label">Ingredientes</div>
+    <div class="ing-grid" id="c-ing-grid"></div>
+
+    <div id="c-agua-section" style="display:none">
+      <div class="section-label" style="margin-top:1rem">División del agua (50 / 50)</div>
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-left"><span class="pill pill-blue">Agua fría</span> temperatura ambiente</div>
+          <div class="info-val" id="c-agua-fria">—</div>
+        </div>
+        <div class="info-row">
+          <div class="info-left"><span class="pill pill-gray">Hielo</span> en cubos</div>
+          <div class="info-val" id="c-hielo">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="c-reposo-section" style="display:none">
+      <div class="reposo-card">
+        <div class="section-label" style="margin-bottom:0">Reposos de fermentación</div>
+        <div class="reposo-steps" id="c-reposo-steps"></div>
+      </div>
+    </div>
+
+    <div id="c-chancaca-section" style="display:none">
+      <div class="divider"></div>
+      <div class="section-label">🍯 Salsa de chancaca (sopaipillas pasadas)</div>
+      <div class="ing-grid" id="c-chancaca-grid"></div>
+      <div class="nota-card" style="margin-top:8px">🍊 Hervir chancaca con agua, canela y cáscara de naranja. Disolver maicena en agua fría y agregar al final para espesar. Cocinar 2–3 min más.</div>
+    </div>
+
+    <div class="section-label" style="margin-top:1rem">Resumen</div>
+    <div class="info-card" id="c-resumen"></div>
+  </div>
+
+</main>
+
+<footer>Hecho con fuego lento · <em>Pizza Palabra</em></footer>
+
+<script>
+// ============================================================
+// RECETAS
+// ============================================================
+// Tipos de cantidad:
+//   unidades → se escala todo linealmente por unidad
+//   harina   → modo panadero: usuario ingresa gr de harina
+// Para ingredientes especiales (huevo, naranja): se escala con Math.ceil()
+
+const MASAS = [
+  {
+    id: 'pizza',
+    emoji: '🍕',
+    nombre: 'Pizza Palabra',
+    desc: 'Masa artesanal con hidratación 66.6%',
+    badge: 'tuya',
+    modoQty: 'pizzas',
+    qtyLabel: 'Número de pizzas',
+    unitTag: 'pizzas',
+    baseQty: 25,
+    bolloPeso: 250, // gramos fijos por pizza
+    aguaSplit: true,
+    hidratacion: 66.6,
+    // porcentajes sobre harina
+    pct: { sal: 2.5, aceite: 2.5, levFresca: 0.3, levSeca: 0.1 },
+    getHarina: (qty, hid) => (qty * 250) / (1 + hid/100 + 0.025 + 0.025),
+    getIngredientes: (harina, qty, hid) => {
+      const agua = harina * hid / 100;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua total', val: fmt(agua), unit: 'ml', highlight: true },
+        { label: 'Sal', val: fmt(harina * 0.025), unit: 'gr' },
+        { label: 'Aceite oliva', val: fmt(harina * 0.025), unit: 'ml' },
+        { label: 'Lev. fresca', val: (harina * 0.003).toFixed(1), unit: 'gr' },
+        { label: 'Lev. seca', val: (harina * 0.001).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (harina, qty, hid) => {
+      const agua = harina * hid / 100;
+      const total = harina + agua + harina*0.025 + harina*0.025;
+      return [
+        { label: 'Peso por bollo', val: '250 gr', badge: 'pill-green', badgeTxt: '✓ fijo' },
+        { label: 'Bollos de 250 gr', val: qty },
+        { label: 'Peso total masa', val: fmt(total) + ' gr' },
+        { label: 'Hidratación', val: hid.toFixed(1) + '%', green: true },
+      ];
+    },
+    getAguaSplit: (harina, qty, hid) => harina * hid / 100,
+    extra: {
+      hidratacion: true, // mostrar control de hidratación
+    }
+  },
+  {
+    id: 'pan_amasado',
+    emoji: '🍞',
+    nombre: 'Pan Amasado',
+    desc: 'Bollos de 100 gr, con materia grasa',
+    badge: 'tuya',
+    modoQty: 'bollos',
+    qtyLabel: 'Número de bollos (100 gr c/u)',
+    unitTag: 'bollos de 100 gr',
+    baseQty: 8,
+    // base: 500gr harina → ~8.4 bollos de 100gr
+    // porcentajes sobre harina
+    pct: { sal:2.0, azucar:1.0, grasa:16.0, agua:50.0, levSeca:2.0, levFresca:5.0 },
+    getIngredientes: (qty) => {
+      // masa total = bollos * 100
+      // harina = masa_total / (1 + 0.02 + 0.01 + 0.16 + 0.50) = /1.69
+      const total = qty * 100;
+      const harina = total / (1 + 0.02 + 0.01 + 0.16 + 0.50);
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua', val: fmt(harina * 0.50), unit: 'ml' },
+        { label: 'Materia grasa', val: fmt(harina * 0.16), unit: 'gr' },
+        { label: 'Sal', val: fmt(harina * 0.02), unit: 'gr' },
+        { label: 'Azúcar', val: fmt(harina * 0.01), unit: 'gr' },
+        { label: 'Lev. fresca', val: (harina * 0.05).toFixed(1), unit: 'gr' },
+        { label: 'Lev. seca', val: (harina * 0.02).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (qty) => {
+      const total = qty * 100;
+      const harina = total / 1.69;
+      return [
+        { label: 'Bollos de 100 gr', val: qty },
+        { label: 'Peso total masa', val: fmt(total) + ' gr' },
+        { label: 'Harina necesaria', val: fmt(harina) + ' gr' },
+      ];
+    },
+  },
+  {
+    id: 'panqueques',
+    emoji: '🥞',
+    nombre: 'Panqueques',
+    desc: 'Masa líquida, ~15 unidades base',
+    badge: 'tuya',
+    modoQty: 'unidades',
+    qtyLabel: 'Número de panqueques',
+    unitTag: 'panqueques',
+    baseQty: 15,
+    // base 15 unidades: 500ml leche, 3 huevos, 45ml aceite, 250gr harina
+    getIngredientes: (qty) => {
+      const f = qty / 15;
+      const huevos = Math.ceil(3 * f);
+      return [
+        { label: 'Harina', val: fmt(250 * f), unit: 'gr' },
+        { label: 'Leche', val: fmt(500 * f), unit: 'ml' },
+        { label: 'Aceite vegetal', val: fmt(45 * f), unit: 'ml' },
+        { label: 'Huevos', val: huevos, unit: 'un.' },
+      ];
+    },
+    getResumen: (qty) => [
+      { label: 'Panqueques', val: qty },
+      { label: 'Harina total', val: fmt(250 * qty/15) + ' gr' },
+    ],
+    nota: '💡 Los huevos se redondean hacia arriba. Si te sobra masa, puedes hacer panqueques extra.',
+  },
+  {
+    id: 'calzones',
+    emoji: '🍩',
+    nombre: 'Calzones Rotos',
+    desc: 'Masa dulce frita con ralladura de naranja',
+    badge: 'tuya',
+    modoQty: 'harina',
+    qtyLabel: 'Gramos de harina',
+    unitTag: 'gramos de harina',
+    baseQty: 500,
+    // base 500gr harina
+    getIngredientes: (harina) => {
+      const f = harina / 500;
+      const huevos = Math.ceil(3 * f);
+      const naranjas = Math.ceil(1 * f);
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Leche', val: fmt(250 * f), unit: 'ml' },
+        { label: 'Mantequilla s/sal', val: fmt(50 * f), unit: 'gr' },
+        { label: 'Azúcar', val: fmt(40 * f), unit: 'gr' },
+        { label: 'Huevos', val: huevos, unit: 'un.' },
+        { label: 'Ralladura naranja', val: naranjas, unit: 'un.' },
+        { label: 'Lev. fresca', val: fmt(15 * f), unit: 'gr' },
+        { label: 'Lev. seca', val: (5 * f).toFixed(1), unit: 'gr' },
+        { label: 'Polvos hornear', val: (5 * f).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (harina) => [
+      { label: 'Harina', val: fmt(harina) + ' gr' },
+      { label: 'Rinde aprox.', val: 'según grosor' },
+    ],
+    nota: '🍊 Los huevos y naranjas se redondean hacia arriba. La levadura fresca y seca son intercambiables (ratio 3:1).',
+  },
+  {
+    id: 'dobladitas',
+    emoji: '🫓',
+    nombre: 'Dobladitas',
+    desc: 'Masa suave con margarina, sin levadura',
+    badge: 'tuya',
+    modoQty: 'harina',
+    qtyLabel: 'Gramos de harina',
+    unitTag: 'gramos de harina',
+    baseQty: 1000,
+    // base 1kg harina: 20gr sal, 550ml agua, 100gr margarina
+    getIngredientes: (harina) => {
+      const f = harina / 1000;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua', val: fmt(550 * f), unit: 'ml' },
+        { label: 'Margarina', val: fmt(100 * f), unit: 'gr' },
+        { label: 'Sal', val: fmt(20 * f), unit: 'gr' },
+      ];
+    },
+    getResumen: (harina) => {
+      const f = harina / 1000;
+      const total = harina + 550*f + 100*f + 20*f;
+      return [
+        { label: 'Peso total masa', val: fmt(total) + ' gr' },
+        { label: 'Hidratación', val: '55%', green: true },
+      ];
+    },
+  },
+  {
+    id: 'marraqueta',
+    emoji: '🥖',
+    nombre: 'Marraqueta',
+    desc: '14 unidades base, 3 reposos',
+    badge: 'tuya',
+    modoQty: 'unidades',
+    qtyLabel: 'Número de marraquetas',
+    unitTag: 'marraquetas',
+    baseQty: 14,
+    reposos: [10, 20, 30],
+    // base 1kg harina → 14 marraquetas
+    // masa por marraqueta ≈ 116gr (solo harina+sal+agua)
+    getIngredientes: (qty) => {
+      const f = qty / 14;
+      const harina = 1000 * f;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua fría', val: fmt(600 * f), unit: 'ml', highlight: true },
+        { label: 'Sal', val: fmt(20 * f), unit: 'gr' },
+        { label: 'Lev. fresca', val: fmt(30 * f), unit: 'gr' },
+        { label: 'Lev. seca', val: (10 * f).toFixed(1), unit: 'gr' },
+        { label: 'Aceite vegetal', val: 'c/n', unit: 'pintar' },
+      ];
+    },
+    getResumen: (qty) => {
+      const f = qty / 14;
+      return [
+        { label: 'Marraquetas', val: qty },
+        { label: 'Peso aprox. c/u', val: '~116 gr' },
+        { label: 'Hidratación', val: '60%', green: true },
+      ];
+    },
+    nota: '⏱ Tres reposos en temperatura ambiente: 10 min → 20 min → 30 min.',
+  },
+  {
+    id: 'brioche',
+    emoji: '🧈',
+    nombre: 'Pan Brioche',
+    desc: '7 bollos base, masa enriquecida',
+    badge: 'tuya',
+    modoQty: 'bollos',
+    qtyLabel: 'Número de bollos',
+    unitTag: 'bollos de brioche',
+    baseQty: 7,
+    // base 7 bollos: 425gr harina
+    getIngredientes: (qty) => {
+      const f = qty / 7;
+      const harina = 425 * f;
+      const huevos = Math.ceil(1 * f);
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Leche', val: fmt(220 * f), unit: 'ml' },
+        { label: 'Mantequilla c/sal', val: fmt(50 * f), unit: 'gr' },
+        { label: 'Azúcar', val: fmt(75 * f), unit: 'gr' },
+        { label: 'Huevo', val: huevos, unit: 'un.' },
+        { label: 'Sal', val: (10 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. seca', val: (15 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. fresca', val: fmt(45 * f), unit: 'gr' },
+      ];
+    },
+    getResumen: (qty) => {
+      const f = qty / 7;
+      const total = (425 + 220 + 50 + 75 + 10) * f;
+      return [
+        { label: 'Bollos', val: qty },
+        { label: 'Peso total masa', val: fmt(total) + ' gr' },
+      ];
+    },
+    nota: '🧈 Los huevos se redondean hacia arriba. La mantequilla debe estar a temperatura ambiente.',
+  },
+  {
+    id: 'hallulla',
+    emoji: '🫶',
+    nombre: 'Hallulla',
+    desc: 'Pan plano chileno, suave y esponjoso',
+    badge: 'std',
+    modoQty: 'unidades',
+    qtyLabel: 'Número de hallullas',
+    unitTag: 'hallullas',
+    baseQty: 12,
+    // Receta estándar: 500gr harina → ~12 hallullas
+    // 500gr harina, 10gr sal, 5gr azúcar, 50gr manteca, 250ml leche tibia, 10gr lev seca
+    getIngredientes: (qty) => {
+      const f = qty / 12;
+      const harina = 500 * f;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Leche tibia', val: fmt(250 * f), unit: 'ml' },
+        { label: 'Manteca/grasa', val: fmt(50 * f), unit: 'gr' },
+        { label: 'Sal', val: fmt(10 * f), unit: 'gr' },
+        { label: 'Azúcar', val: (5 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. seca', val: (10 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. fresca', val: fmt(30 * f), unit: 'gr' },
+      ];
+    },
+    getResumen: (qty) => {
+      const f = qty / 12;
+      return [
+        { label: 'Hallullas', val: qty },
+        { label: 'Hidratación', val: '50%', green: true },
+      ];
+    },
+    nota: '🥛 Usar leche tibia (no caliente) para activar la levadura. Pintar con leche antes de hornear.',
+  },
+  {
+    id: 'focaccia',
+    emoji: '🫒',
+    nombre: 'Focaccia',
+    desc: 'Alta hidratación, estilo pizzaiolo',
+    badge: 'std',
+    modoQty: 'harina',
+    qtyLabel: 'Gramos de harina',
+    unitTag: 'gramos de harina',
+    baseQty: 500,
+    // Receta pizzaiolo: 500gr harina, 425ml agua (85% hid), 10gr sal, 3gr lev seca, 40ml AOVE
+    getIngredientes: (harina) => {
+      const f = harina / 500;
+      return [
+        { label: 'Harina 00 o fuerza', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua fría', val: fmt(425 * f), unit: 'ml', highlight: true },
+        { label: 'AOVE (oliva extra)', val: fmt(40 * f), unit: 'ml' },
+        { label: 'Sal', val: fmt(10 * f), unit: 'gr' },
+        { label: 'Lev. seca', val: (3 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. fresca', val: (9 * f).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (harina) => {
+      const f = harina / 500;
+      return [
+        { label: 'Hidratación', val: '85%', green: true },
+        { label: 'Rinde aprox.', val: '1 bandeja / 500 gr harina' },
+      ];
+    },
+    nota: '🫒 Fermentación en frío 18-24 hrs recomendada. Cubrir con AOVE generoso antes de hornear a 230°C. Para toppings: tomate cherry, romero, sal gruesa.',
+  },
+  {
+    id: 'ciabatta',
+    emoji: '🥖',
+    nombre: 'Pan Ciabatta',
+    desc: 'Masa muy húmeda, alvéolos grandes',
+    badge: 'std',
+    modoQty: 'harina',
+    qtyLabel: 'Gramos de harina',
+    unitTag: 'gramos de harina',
+    baseQty: 500,
+    // Receta estándar: 500gr harina, 400ml agua (80% hid), 10gr sal, 3gr lev seca, 20ml aceite
+    getIngredientes: (harina) => {
+      const f = harina / 500;
+      return [
+        { label: 'Harina de fuerza', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua fría', val: fmt(400 * f), unit: 'ml', highlight: true },
+        { label: 'Aceite oliva', val: fmt(20 * f), unit: 'ml' },
+        { label: 'Sal', val: fmt(10 * f), unit: 'gr' },
+        { label: 'Lev. seca', val: (3 * f).toFixed(1), unit: 'gr' },
+        { label: 'Lev. fresca', val: (9 * f).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (harina) => {
+      const f = harina / 500;
+      return [
+        { label: 'Hidratación', val: '80%', green: true },
+        { label: 'Panes aprox.', val: '2 panes / 500 gr harina' },
+      ];
+    },
+    nota: '💧 Masa muy pegajosa, no agregar harina extra. Hacer pliegues cada 30 min durante 2 hrs. No amasar de forma tradicional.',
+  },
+  {
+    id: 'queque',
+    emoji: '🎂',
+    nombre: 'Queque Chileno',
+    desc: 'El clásico de abuela, esponjoso',
+    badge: 'std',
+    modoQty: 'moldes',
+    qtyLabel: 'Número de moldes (molde 24 cm)',
+    unitTag: 'moldes de 24 cm',
+    baseQty: 1,
+    // Base 1 molde: 250gr harina, 200gr azúcar, 125gr mantequilla, 3 huevos, 125ml leche, 1 cdita esencia vainilla, 2 cditas polvos hornear, pizca sal
+    getIngredientes: (qty) => {
+      const f = qty;
+      const huevos = Math.ceil(3 * f);
+      return [
+        { label: 'Harina', val: fmt(250 * f), unit: 'gr' },
+        { label: 'Azúcar', val: fmt(200 * f), unit: 'gr' },
+        { label: 'Mantequilla', val: fmt(125 * f), unit: 'gr' },
+        { label: 'Leche', val: fmt(125 * f), unit: 'ml' },
+        { label: 'Huevos', val: huevos, unit: 'un.' },
+        { label: 'Polvos hornear', val: (8 * f).toFixed(1), unit: 'gr' },
+        { label: 'Esencia vainilla', val: (5 * f).toFixed(1), unit: 'ml' },
+        { label: 'Sal', val: 'pizca', unit: '' },
+      ];
+    },
+    getResumen: (qty) => [
+      { label: 'Moldes de 24 cm', val: qty },
+      { label: 'Temperatura', val: '170–180°C' },
+      { label: 'Tiempo aprox.', val: '35–45 min' },
+    ],
+    nota: '🧈 Mantequilla a temperatura ambiente. Hornear hasta que el palillo salga limpio. No abrir el horno los primeros 25 min.',
+  },
+  {
+    id: 'sopaipillas',
+    emoji: '🎃',
+    nombre: 'Sopaipillas',
+    desc: 'Con zapallo, masa clásica chilena',
+    badge: 'tuya',
+    modoQty: 'unidades',
+    qtyLabel: 'Número de sopaipillas',
+    unitTag: 'sopaipillas medianas',
+    baseQty: 18,
+    // Base 18 unidades: 500gr harina, 300gr zapallo, 120ml agua, 10gr sal, 30gr manteca, 5gr polvos
+    // peso por sopaipilla ~53gr
+    // porcentajes sobre harina: zapallo 60%, agua 24%, sal 2%, manteca 6%, polvos 1%
+    getIngredientes: (qty) => {
+      const f = qty / 18;
+      const harina = 500 * f;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Zapallo cocido', val: fmt(300 * f), unit: 'gr', highlight: true },
+        { label: 'Agua tibia', val: fmt(120 * f), unit: 'ml' },
+        { label: 'Manteca / aceite', val: fmt(30 * f), unit: 'gr' },
+        { label: 'Sal', val: fmt(10 * f), unit: 'gr' },
+        { label: 'Polvos hornear', val: (5 * f).toFixed(1), unit: 'gr' },
+      ];
+    },
+    getResumen: (qty) => {
+      const f = qty / 18;
+      const total = 960 * f;
+      return [
+        { label: 'Sopaipillas', val: qty },
+        { label: 'Peso aprox. c/u', val: '~53 gr' },
+        { label: 'Peso total masa', val: fmt(total) + ' gr' },
+      ];
+    },
+    nota: '🎃 El zapallo debe estar bien cocido y escurrido — sin exceso de agua o la masa quedará pegajosa. Freír en aceite abundante a 170–180°C.',
+    extra: {
+      chancaca: true,
+    }
+  },
+  {
+    id: 'empanada_frita',
+    emoji: '🫔',
+    nombre: 'Empanada Frita',
+    desc: 'Masa chilena clásica, bollos de 100 gr',
+    badge: 'tuya',
+    modoQty: 'bollos',
+    qtyLabel: 'Número de empanadas (bollos 100 gr)',
+    unitTag: 'empanadas de 100 gr',
+    baseQty: 12,
+    // porcentajes: hidratación 52%, sal 2%, grasa 8% sobre harina
+    // masa total = bollos * 100
+    // harina = total / (1 + 0.52 + 0.02 + 0.08) = total / 1.62
+    getIngredientes: (qty) => {
+      const total = qty * 100;
+      const harina = total / 1.62;
+      return [
+        { label: 'Harina', val: fmt(harina), unit: 'gr' },
+        { label: 'Agua tibia', val: fmt(harina * 0.52), unit: 'ml' },
+        { label: 'Materia grasa', val: fmt(harina * 0.08), unit: 'gr' },
+        { label: 'Sal', val: fmt(harina * 0.02), unit: 'gr' },
+      ];
+    },
+    getResumen: (qty) => {
+      const total = qty * 100;
+      const harina = total / 1.62;
+      return [
+        { label: 'Empanadas', val: qty },
+        { label: 'Peso por bollo', val: '100 gr', badge: 'pill-green', badgeTxt: '✓ fijo' },
+        { label: 'Harina necesaria', val: fmt(harina) + ' gr' },
+        { label: 'Hidratación', val: '52%', green: true },
+      ];
+    },
+    nota: '🫔 Materia grasa puede ser aceite de maravilla o mantequilla derretida. Reposar la masa 20 min antes de estirar. Freír en aceite profundo a 170°C.',
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let masaActual = null;
+let hidratacion = 66.6;
+
+function fmt(n) {
+  const r = Math.round(n);
+  return r.toLocaleString('es-CL');
+}
+
+// ============================================================
+// RENDER HOME
+// ============================================================
+function renderHome() {
+  const grid = document.getElementById('masa-grid');
+  grid.innerHTML = '';
+  MASAS.forEach(masa => {
+    const card = document.createElement('div');
+    card.className = 'masa-card';
+    card.onclick = () => openMasa(masa.id);
+    card.innerHTML = `
+      <span class="masa-badge badge-${masa.badge}">${masa.badge === 'tuya' ? 'Tu receta' : 'Estándar'}</span>
+      <span class="masa-emoji">${masa.emoji}</span>
+      <div class="masa-nombre">${masa.nombre}</div>
+      <div class="masa-desc">${masa.desc}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ============================================================
+// OPEN MASA
+// ============================================================
+function openMasa(id) {
+  masaActual = MASAS.find(m => m.id === id);
+  if (!masaActual) return;
+
+  document.getElementById('home').style.display = 'none';
+  const cv = document.getElementById('calc-view');
+  cv.classList.add('active');
+
+  document.getElementById('c-emoji').textContent = masaActual.emoji;
+
+  // título con itálica en última palabra
+  const palabras = masaActual.nombre.split(' ');
+  const ultima = palabras.pop();
+  const titulo = palabras.length > 0
+    ? palabras.join(' ') + ' <em>' + ultima + '</em>'
+    : '<em>' + ultima + '</em>';
+  document.getElementById('c-title').innerHTML = titulo;
+  document.getElementById('c-subtitle').textContent = masaActual.desc;
+
+  document.getElementById('c-qty-label').textContent = masaActual.qtyLabel;
+  document.getElementById('c-unit-tag').textContent = masaActual.unitTag;
+
+  const input = document.getElementById('c-qty');
+  input.value = masaActual.baseQty;
+
+  // nota
+  const notaEl = document.getElementById('c-nota');
+  if (masaActual.nota) {
+    notaEl.innerHTML = masaActual.nota;
+    notaEl.style.display = 'block';
+  } else {
+    notaEl.style.display = 'none';
+  }
+
+  // control hidratación (solo pizza)
+  let hidControl = document.getElementById('hid-control');
+  if (masaActual.extra && masaActual.extra.hidratacion) {
+    if (!hidControl) {
+      hidControl = document.createElement('div');
+      hidControl.id = 'hid-control';
+      hidControl.className = 'qty-card';
+      hidControl.style.marginBottom = '10px';
+      hidControl.innerHTML = `
+        <div class="qty-label">Hidratación</div>
+        <div class="num-row">
+          <button class="num-btn" onclick="stepHid(-0.5)">−</button>
+          <input class="num-input" type="number" id="c-hid" value="66.6" min="55" max="80" step="0.1" oninput="onHid(this.value)">
+          <button class="num-btn" onclick="stepHid(0.5)">+</button>
+        </div>
+        <div class="unit-tag">% · tu estilo habitual: 66.6%</div>
+      `;
+      document.getElementById('c-nota').insertAdjacentElement('afterend', hidControl);
+    }
+    hidControl.style.display = 'block';
+    hidratacion = 66.6;
+    document.getElementById('c-hid').value = 66.6;
+  } else {
+    if (hidControl) hidControl.style.display = 'none';
+  }
+
+  // reposos
+  const reposoSec = document.getElementById('c-reposo-section');
+  if (masaActual.reposos) {
+    const stepsEl = document.getElementById('c-reposo-steps');
+    stepsEl.innerHTML = masaActual.reposos.map(m =>
+      `<div class="reposo-step"><div class="reposo-num">${m}</div><div class="reposo-unit">minutos</div></div>`
+    ).join('');
+    reposoSec.style.display = 'block';
+  } else {
+    reposoSec.style.display = 'none';
+  }
+
+  calcular();
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  document.getElementById('home').style.display = 'block';
+  document.getElementById('calc-view').classList.remove('active');
+  masaActual = null;
+}
+
+// ============================================================
+// STEP / INPUT
+// ============================================================
+function step(delta) {
+  const input = document.getElementById('c-qty');
+  const v = Math.max(1, (parseInt(input.value) || 0) + delta);
+  input.value = v;
+  calcular();
+}
+
+function stepHid(delta) {
+  const input = document.getElementById('c-hid');
+  const v = Math.max(55, Math.min(80, parseFloat(((parseFloat(input.value)||0) + delta).toFixed(1))));
+  input.value = v;
+  onHid(v);
+}
+
+function onHid(v) {
+  hidratacion = Math.max(55, Math.min(80, parseFloat(v) || 66.6));
+  calcular();
+}
+
+// ============================================================
+// CALCULAR
+// ============================================================
+function calcular() {
+  if (!masaActual) return;
+  const qty = Math.max(1, parseInt(document.getElementById('c-qty').value) || 1);
+  const m = masaActual;
+
+  let ingredientes, resumen;
+
+  if (m.id === 'pizza') {
+    const harina = m.getHarina(qty, hidratacion);
+    ingredientes = m.getIngredientes(harina, qty, hidratacion);
+    resumen = m.getResumen(harina, qty, hidratacion);
+    // agua split
+    const agua = m.getAguaSplit(harina, qty, hidratacion);
+    const mitad = Math.round(agua / 2);
+    document.getElementById('c-agua-section').style.display = 'block';
+    document.getElementById('c-agua-fria').textContent = fmt(mitad) + ' ml';
+    document.getElementById('c-hielo').textContent = fmt(mitad) + ' ml';
+  } else {
+    document.getElementById('c-agua-section').style.display = 'none';
+    if (m.modoQty === 'harina') {
+      ingredientes = m.getIngredientes(qty);
+      resumen = m.getResumen(qty);
+    } else {
+      ingredientes = m.getIngredientes(qty);
+      resumen = m.getResumen(qty);
+    }
+  }
+
+  // render ingredientes
+  const grid = document.getElementById('c-ing-grid');
+  grid.innerHTML = ingredientes.map(ing => `
+    <div class="ing-card">
+      <div class="ing-label">${ing.label}</div>
+      <div class="ing-val${ing.highlight ? ' highlight' : ''}">${ing.val} <small>${ing.unit}</small></div>
+    </div>
+  `).join('');
+
+  // chancaca (solo sopaipillas)
+  const chancacaSec = document.getElementById('c-chancaca-section');
+  if (m.extra && m.extra.chancaca) {
+    const f = qty / 18;
+    const naranjas = Math.ceil(f);
+    const canelas = Math.ceil(f);
+    const chancacaIng = [
+      { label: 'Chancaca', val: fmt(250 * f), unit: 'gr', highlight: true },
+      { label: 'Agua', val: fmt(500 * f), unit: 'ml' },
+      { label: 'Maicena', val: (15 * f).toFixed(1), unit: 'gr' },
+      { label: 'Agua fría (maicena)', val: fmt(40 * f), unit: 'ml' },
+      { label: 'Canela en rama', val: canelas, unit: 'rama(s)' },
+      { label: 'Cáscara naranja', val: naranjas, unit: 'un.' },
+    ];
+    document.getElementById('c-chancaca-grid').innerHTML = chancacaIng.map(ing => `
+      <div class="ing-card">
+        <div class="ing-label">${ing.label}</div>
+        <div class="ing-val${ing.highlight ? ' highlight' : ''}">${ing.val} <small>${ing.unit}</small></div>
+      </div>
+    `).join('');
+    chancacaSec.style.display = 'block';
+  } else {
+    chancacaSec.style.display = 'none';
+  }
+
+  // render resumen
+  const resumenEl = document.getElementById('c-resumen');
+  resumenEl.innerHTML = resumen.map(row => `
+    <div class="info-row">
+      <div class="info-left">${row.label}</div>
+      <div class="info-val${row.green ? ' green' : ''}" style="display:flex;align-items:center;gap:8px">
+        ${row.val}
+        ${row.badge ? `<span class="pill ${row.badge}">${row.badgeTxt}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderHome();
+
+// Registrar service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('SW registrado'))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>
